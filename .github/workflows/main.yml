@@ -23,7 +23,7 @@ jobs:
         with:
                 context: ./src
                 push: true
-                file: .src/Review-Filmes.Web/Dockerfile
+                file: ./src/Review-Filmes.Web/Dockerfile
                 tags: |
                   lfogaca34/review-filmes:v${{github.run_number}}
                   lfogaca34/review-filmes:latest
