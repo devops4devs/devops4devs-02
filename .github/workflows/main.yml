@@ -32,6 +32,23 @@ jobs:
     runs-on: ubuntu-latest
     needs: [CI]
     steps:  # Added 'steps' here to define the steps for the job
-      - name: Passo 01 
-        run: echo "Deploy da aplicação"
+      - name: Checkout do codigo fonte
+        uses: actions/checkout@v4.1.7
 
+      - name: Configuração do AWS cli
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - name: Configuração do Kubeconfig
+        run: aws eks update-kubeconfig --name aula-eks
+      - name: Deploy no kubernetes
+        uses: Azure/k8s-deploy@v5.0.0
+        with:
+          manifests: |
+             ./github/workflows/k8s/deployment.yaml
+          images: 
+            lfogaca34/review-filmes:v${{github.run_number}}
+
+       
