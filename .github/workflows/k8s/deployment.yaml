@@ -1,0 +1,83 @@
+# Deploy PostgreSQL
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgre
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgre
+  template:
+    metadata:
+      labels:
+        app: postgre
+    spec:
+      containers:
+      - name: postgre
+        image: postgres:13.1  # Corrigi o nome da imagem para 'postgres'
+        env:
+        - name: POSTGRES_PASSWORD
+          value: Passw0rd2024
+        - name: POSTGRES_USER
+          value: reviewsfilmes
+        - name: POSTGRES_DB
+          value: reviewsfilmes  # Adicionei um valor para POSTGRES_DB, correspondendo ao nome do banco de dados
+        ports:
+        - containerPort: 5432
+---
+# Service para PostgreSQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgre-service
+spec:
+  selector:
+    app: postgre
+  ports:
+    - protocol: TCP
+      port: 5432
+---
+# Deploy da aplicação web reviewsfilmes
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reviewsfilmes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reviewsfilmes
+  template:
+    metadata:
+      labels:
+        app: reviewsfilmes
+    spec:
+      containers:
+      - name: reviewsfilmes
+        image: lfogaca34/review-filmes:v1
+        env:
+        - name: ASPNETCORE_HTTP_PORTS  # Corrigi o nome da variável de ambiente para ASPNETCORE_HTTP_PORTS
+          value: "8080"
+        - name: ConnectionStrings__DefaultConnection  # Corrigi o nome da variável de ambiente para ConnectionStrings__DefaultConnection
+          value: "Host=postgre;Database=reviewsfilmes;Username=reviewsfilmes;Password=Passw0rd2024"
+        ports:
+        - containerPort: 8080
+---
+# Service para a aplicação web reviewsfilmes
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviewsfilmes
+spec:
+  selector:
+    app: reviewsfilmes
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      #nodePort: 30000  # Definido um nodePort para o serviço, para acesso externo
+  type: LoadBalancer  # Definido o tipo do serviço como NodePort para permitir o acesso externo
+       
+
+            
